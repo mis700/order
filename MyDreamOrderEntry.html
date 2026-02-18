@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MY DREAM FOODS LIMITED - Order Entry Form</title>
+<style>
+body { 
+  background: linear-gradient(135deg, #d2e6ff 0%, #a8d5ff 100%); 
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', Arial, sans-serif; 
+  padding: 15px; 
+  margin: 0;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.container { 
+  background: white; 
+  border-radius: 15px; 
+  padding: 20px; 
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+  max-width: 100%;
+  margin: 0 auto;
+  overflow-x: auto;
+}
+
+.form-row { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px; 
+  margin: 20px 0;
+  align-items: stretch;
+}
+
+@media (min-width: 769px) {
+  .form-row { 
+    flex-direction: row; 
+    align-items: center; 
+  }
+  .input-group { 
+    flex: 1; 
+    min-width: 200px; 
+  }
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+label { 
+  font-weight: 600; 
+  color: #333; 
+  font-size: 14px;
+  margin: 0;
+}
+
+/* INPUTS */
+/* TEXT INPUTS ONLY - NO dropdown arrow */
+input[type=text], input[type=number], input[type=date] { 
+  background: #ffffc8; 
+  padding: 14px; 
+  border: 2px solid #ddd; 
+  border-radius: 10px; 
+  font-size: 16px;
+  width: 100%; 
+  box-sizing: border-box;
+  min-height: 48px;
+}
+
+/* SELECTS ONLY - WITH dropdown arrow */
+select { 
+  background: #ffffc8; 
+  padding: 14px 40px 14px 14px; 
+  border: 2px solid #ddd; 
+  border-radius: 10px; 
+  font-size: 16px;
+  width: 100%; 
+  box-sizing: border-box;
+  min-height: 48px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 20px;
+}
+
+input:focus, select:focus { 
+  border-color: #4CAF50; 
+  box-shadow: 0 0 12px rgba(76,175,80,0.3); 
+  outline: none; 
+}
+
+
+button { 
+  background: linear-gradient(45deg, #c8c8ff, #a8a8ff); 
+  padding: 14px 20px; 
+  border: none; 
+  border-radius: 10px; 
+  cursor: pointer; 
+  font-weight: 600; 
+  font-size: 16px;
+  min-height: 48px; /* Proper touch target */
+  min-width: 100px;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: all 0.2s ease;
+  margin: 4px;
+  flex-shrink: 0;
+}
+
+button:hover:not(:disabled) { 
+  transform: translateY(-1px); 
+  box-shadow: 0 6px 20px rgba(0,0,0,0.2); 
+}
+
+button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+button:disabled { 
+  background: #ccc; 
+  cursor: not-allowed; 
+  opacity: 0.6; 
+}
+
+table { 
+  border-collapse: collapse; 
+  width: 100%; 
+  margin-top: 20px; 
+  background: white; 
+  border-radius: 12px; 
+  overflow: hidden; 
+  box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+  font-size: 14px;
+  table-layout: fixed;
+}
+
+th, td { 
+  border: 2px solid #e0e0e0; 
+  padding: 12px 8px; 
+  text-align: left; 
+  word-break: break-word;
+}
+
+th { 
+  background: linear-gradient(45deg, #e0e0ff, #c8c8ff); 
+  font-weight: bold; 
+  font-size: 14px; 
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+@media (max-width: 768px) {
+  th:nth-child(1), td:nth-child(1) { width: 18%; } /* Segment */
+  th:nth-child(2), td:nth-child(2) { width: 45%; } /* Product */
+  th:nth-child(3), td:nth-child(3) { width: 15%; } /* Unit */
+  th:nth-child(4), td:nth-child(4) { width: 12%; } /* Qty */
+  th:nth-child(5), td:nth-child(5) { width: 10%; } /* Actions */
+}
+
+tr.selected { 
+  background: #b0c4de !important; 
+}
+
+tr:hover { 
+  background: #f0f8ff; 
+}
+
+.save-section { 
+  margin-top: 30px; 
+  padding: 25px; 
+  background: linear-gradient(45deg, #f0f8ff, #e6f3ff); 
+  border-radius: 15px; 
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+}
+
+@media (min-width: 769px) {
+  .save-section {
+    flex-direction: row;
+    justify-content: center;
+  }
+}
+
+.status { 
+  padding: 15px; 
+  margin: 15px 0; 
+  border-radius: 12px; 
+  font-weight: 600; 
+  font-size: 16px; 
+  text-align: center;
+}
+
+.success { background: #d4edda; color: #155724; border: 2px solid #c3e6cb; }
+.error { background: #f8d7da; color: #721c24; border: 2px solid #f5c6cb; }
+.loading { background: #d1ecf1; color: #0c5460; border: 2px solid #bee5eb; animation: pulse 1.5s infinite; }
+.info { background: #d1ecf1; color: #0c5460; border: 2px solid #bee5eb; }
+
+@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+
+h1 { 
+  color: #2c3e50; 
+  text-align: center; 
+  margin: 0 0 10px 0; 
+  font-size: clamp(20px, 5vw, 28px);
+}
+
+h2 { 
+  color: #34495e; 
+  border-bottom: 2px solid #e0e0ff; 
+  padding-bottom: 10px; 
+  margin-top: 25px;
+  font-size: clamp(16px, 4vw, 20px);
+}
+
+.header-section { 
+  background: linear-gradient(45deg, #667eea 0%, #764ba2 100%); 
+  color: white; 
+  padding: 20px; 
+  border-radius: 15px; 
+  margin-bottom: 25px; 
+  text-align: center; 
+}
+
+.total-section { 
+  background: #f8f9fa; 
+  padding: 20px; 
+  border-radius: 12px; 
+  margin: 20px 0; 
+  text-align: center; 
+  font-size: clamp(16px, 4vw, 18px); 
+  font-weight: bold; 
+  color: #2c3e50; 
+}
+
+#status { display: none; }
+
+/* Table button fixes for mobile */
+table button {
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+  min-height: 36px !important;
+  margin: 2px !important;
+  border-radius: 6px !important;
+  flex-shrink: 0;
+}
+
+/* Prevent horizontal scroll */
+@media (max-width: 480px) {
+  .container {
+    padding: 15px 10px;
+  }
+  table {
+    font-size: 13px;
+  }
+  th, td {
+    padding: 10px 6px;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-section">
+      <h1>📦 MY DREAM FOODS LIMITED</h1>
+      <h2>🍫 Order Entry Form</h2>
+      <p style="margin: 0; opacity: 0.9;">Click on table rows to edit items | Type to filter products</p>
+    </div>
+
+    <div class="form-row">
+      <div class="input-group">
+        <label>📅 Date:</label>
+        <input type="date" id="txtDate">
+      </div>
+      <div class="input-group">
+        <label>👥 Party:</label>
+        <input type="text" id="txtParty" placeholder="Enter Party Name">
+      </div>
+    </div>
+
+    <h2>➕ Add Items</h2>
+    <div class="form-row">
+      <div class="input-group">
+        <label>📂 Segment:</label>
+        <select id="cmbSegment">
+          <option value="">Select Segment</option>
+          <option value="Chocolate">Chocolate</option>
+          <option value="Imli">Imli</option>
+          <option value="Jelly">Jelly</option>
+          <option value="Wafer">Wafer</option>
+        </select>
+      </div>
+      
+      <div class="input-group" style="flex: 2;">
+        <label>📦 Product:</label>
+        <input type="text" id="txtProduct" list="productList" placeholder="Click for full list or type to filter...">
+        <datalist id="productList"></datalist>
+      </div>
+      
+      <div class="input-group">
+        <label>📏 Unit:</label>
+        <select id="cmbUnit">
+          <option value="">Select Unit</option>
+          <option value="PCS">PCS</option>
+          <option value="BOX">BOX</option>
+          <option value="CONTAINER">CONTAINER</option>
+          <option value="JAR">JAR</option>
+          <option value="PKT">PKT</option>
+          <option value="CUP">CUP</option>
+          <option value="BUCKET">BUCKET</option>
+        </select>
+      </div>
+      
+      <div class="input-group" style="max-width: 150px;">
+        <label>🔢 Qty:</label>
+        <input type="number" id="txtQty" min="1" placeholder="1">
+      </div>
+      
+      <button onclick="addItem()" style="background: linear-gradient(45deg, #27ae60, #20ad4f); color: white;">➕ Add Item</button>
+      <button onclick="updateItem()" id="updateBtn" style="background: linear-gradient(45deg, #f39c12, #e67e22); color: white;" disabled>✏️ Update</button>
+    </div>
+
+    <h2>📋 Order Items <span id="itemCount" style="color: #27ae60; font-weight: bold;">(0 items)</span></h2>
+    <table id="lstItems">
+      <thead>
+        <tr>
+          <th>Segment</th><th>Product</th><th>Unit</th><th>Qty</th>
+          <th style="width: 100px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div class="total-section" id="totalSection" style="display: none;">
+      Total Items: <span id="totalItems">0</span> | 
+      Ready to Submit Order for <span id="totalParty"></span>
+    </div>
+
+    <div class="save-section">
+      <button id="saveBtn" onclick="saveOrder()" style="background: linear-gradient(45deg, #4CAF50, #45a049); color: white; font-size: 18px; padding: 15px 40px;">💾 Submit Order</button>
+      <button onclick="clearForm()" style="background: linear-gradient(45deg, #ff9800, #e68900); color: white;">🗑️ Clear All</button>
+      <button onclick="downloadOrder()" style="background: linear-gradient(45deg, #2196F3, #1976D2); color: white;">📥 Download CSV</button>
+    </div>
+
+    <div id="status" class="status"></div>
+  </div>
+
+  <script>
+    let selectedIndex = -1;
+    let items = [];
+    const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbw8kiOirLt1-l7yBI4t2-Gz7Qt99FvxdLG6_v35Z5a-mZMb9mJUQufXsMXa9Il2z8X9/exec';
+
+    // Fixed products data structure
+    const productsBySegment = {
+      'Chocolate': [
+'Butter Soft Container 125 pcs x 24 box',
+'CHOCO ART 30 pcs x 24 box',
+'Choky Chocolate Cream 100 pcs x 36 jar',
+'Choky Chocolate Cream 40 pcs x 24 box',
+'Coffee cube 125 pcs x 36 box',
+'Dark cube 125 pcs x 36 box',
+'Dinner Time 30 pcs x 24 box',
+'Jungle Jack 30 pcs x 18 box',
+'Jungle Jack 40 pcs x 18 box',
+'Kings 125 pcs * 24 container',
+'Malai Mithai 60 Pcs x 60 pkt',
+'Milky Cube 125 pcs x 24 container',
+'Milky Cube 250 pcs x 16 Bucket',
+'Milky Cube 60 pcs x 30 jar',
+'Milky Cube Birthday Special 35 pcs x 24 container',
+'Milky Cube Classic 125 pcs x 36 box',
+'Milky Cube Classic 35 pcs x 24 container',
+'Milky Cube Gift 18 pcs x 50 cup',
+'Milky Cube Pouch 125 pcs x 36 box',
+'Milky Cube Rose 35 pcs x 24 container',
+'Milky Malai Mithai Mango 100 pcs x 36 jar',
+'Milky Malai Mithai Rabdi 100 pcs x 24 jar',
+'Milky Malai Mithai Rabdi 100 pcs x 36 jar',
+'Milky Malai Mithai Rabdi 150 pcs x 24 container',
+'Milky Malai Mithai Rose 100 pcs x 36 jar',
+'Milky Malai Rabdi 200 pcs x 24 container',
+'Milky Malai Rabdi 40 pcs x 24 box',
+'Milky Malai Rabdi 40 pcs x 24 container',
+'Rosy Cube 125 pcs x 36 box'
+
+      ],
+      'Imli': ['Zinga Imli 100 pcs x 24 jar'],
+      'Jelly': [
+'Eddy Teddy Maxi 30 pcs x 20 box',
+'Fruzy Assorted 175 pcs x 24 container',
+'Fruzy Guava 175 pcs x 24 container',
+'Fruzy Assorted 30 pcs x 20 box',
+'Fruzy Assorted 35pcs x 16 container',
+'Fruzy Lichi 175pcs x 24 container',
+'Fruzy Mango 175pcs x 24 container',
+'Fruzy Strawberry 175 pcs x 24 container',
+'Jelly Assorted 60 pcs x 40 box',
+'Jelly Assorted 85 pcs x 40 box',
+'Jelly Green Apple 60 pcs x 40 box',
+'Jelly Green Apple 85 pcs x 40 box',
+'Jelly Guava 60 pcs x 40 box',
+'Jelly Guava 85 pcs x 40 box',
+'Jelly Imli 60 pcs x 40 box',
+'Jelly Imli 85 pcs x 40 box',
+'Jelly Jar Assorted 150 pcs x 24 jar',
+'Jelly Jar Guava 150 pcs x 24 jar',
+'Jelly Jar Imli 150 pcs x 24 jar',
+'Jelly Jar Lychee 150 pcs x 24 jar',
+'Jelly Jar Mango 150 pcs x 24 jar',
+'Jelly Jar Strawberry 150 pcs x 24 jar',
+'Jelly Kharbuza 60 pcs x 40 box',
+'Jelly Kharbuza 85 pcs x 40 box',
+'Jelly Litchi 60 pcs x 40 box',
+'Jelly Lychee 85 pcs x 40 box',
+'Jelly Mango 60 pcs x 40 box',
+'Jelly Mango 85 pcs x 40 box',
+'Jelly Orange 60 pcs x 40 box',
+'Jelly Orange 85 pcs x 40 box',
+'Jelly Paan 60 pcs x 40 box',
+'Jelly Paan 85 pcs x 40 box',
+'Jelly Strawberry 60 pcs x 40 box',
+'Jelly Strawberry 85 pcs x 40 box',
+'Mix Jelly Bucket 150 pcs x 24 container'
+      ],
+      'Wafer': [
+'Biggy Jar 36 pcs x 15 jar',
+'Biggy Jar Banana 40 pcs x 15 jar',
+'Biggy Jar Orange 40 pcs x 15 jar',
+'Biggy Jar Strawberry 40 pcs x 15 jar',
+'Mix Biggy 36 pcs x 15 jar',
+'Mix Biggy 40 pcs x 15 jar',
+'Mix Wafer 60 pcs x 28 box',
+'Wafer 35 pcs x 28 box',
+'Wafer Assorted 40 pcs x 18 jar',
+'Wafer Banana 40 pcs x 18 jar',
+'Wafer Chocolate 40 pcs x 18 jar',
+'Wafer Mango 60 pcs x 28 box',
+'Wafer Orange 40 pcs x 18 jar',
+'Wafer Orange 60 pcs x 28 box',
+'Wafer Strawberry 40 pcs x 18 jar',
+'Wafer Strawberry 60 pcs x 28 box',
+'Wafer Vanila 60 pcs x 28 box'
+      ]
+    };
+
+    function extractUnitFromProduct(productName) {
+      const unitMap = {
+        'jar': 'JAR', 'box': 'BOX', 'container': 'CONTAINER', 
+        'pkt': 'PKT', 'cup': 'CUP', 'bucket': 'BUCKET'
+      };
+      
+      const lowerName = productName.toLowerCase();
+      for (const [key, value] of Object.entries(unitMap)) {
+        if (lowerName.includes(key)) return value;
+      }
+      return '';
+    }
+
+    function detectSegmentFromProduct(productName) {
+      const lowerName = productName.toLowerCase();
+      if (lowerName.includes('choky') || lowerName.includes('coffee') || lowerName.includes('dark') || 
+          lowerName.includes('jungle') || lowerName.includes('malai') || lowerName.includes('milky') || 
+          lowerName.includes('rosy') || lowerName.includes('kings')) return 'Chocolate';
+      if (lowerName.includes('zinga') || lowerName.includes('imli')) return 'Imli';
+      if (lowerName.includes('eddy') || lowerName.includes('fruzy') || lowerName.includes('jelly')) return 'Jelly';
+      if (lowerName.includes('wafer') || lowerName.includes('biggy')) return 'Wafer';
+      return '';
+    }
+
+function updateProductDatalist(segment) {
+  const datalist = document.getElementById('productList');
+  const productInput = document.getElementById('txtProduct');
+  
+  // Clear existing options
+  datalist.innerHTML = '';
+  
+  if (segment && productsBySegment[segment]) {
+    productsBySegment[segment].forEach(product => {
+      const option = document.createElement('option');
+      option.value = product;
+      option.textContent = product;
+      datalist.appendChild(option);
+    });
+    console.log(`✅ Loaded ${productsBySegment[segment].length} products for ${segment}`);
+  } else {
+    console.log('❌ No segment selected or no products found');
+  }
+}
+    function onProductInput() {
+      const product = document.getElementById('txtProduct').value.trim();
+      if (!product) return;
+
+      const seg = detectSegmentFromProduct(product);
+      if (seg && !document.getElementById('cmbSegment').value) {
+        document.getElementById('cmbSegment').value = seg;
+        updateProductDatalist(seg);
+      }
+
+      const unit = extractUnitFromProduct(product);
+      if (unit) document.getElementById('cmbUnit').value = unit;
+    }
+
+    function validateForm() {
+      const party = document.getElementById('txtParty').value.trim();
+      const seg = document.getElementById('cmbSegment').value.trim();
+      const prod = document.getElementById('txtProduct').value.trim();
+      const unit = document.getElementById('cmbUnit').value.trim();
+      const qty = parseInt(document.getElementById('txtQty').value);
+
+      if (!party) throw new Error('Enter Party Name');
+      if (!seg) throw new Error('Select Segment');
+      if (!prod) throw new Error('Select Product');
+      if (!unit) throw new Error('Select Unit');
+      if (!qty || qty < 1) throw new Error('Enter valid Qty (minimum 1)');
+      
+      return true;
+    }
+
+    function onSegmentChange() {
+      const seg = document.getElementById('cmbSegment').value;
+      document.getElementById('txtProduct').value = '';
+      document.getElementById('cmbUnit').value = '';
+      updateProductDatalist(seg);
+    }
+
+window.onload = function() {
+  const today = new Date();
+  const dateStr = today.toISOString().split('T')[0];
+  document.getElementById('txtDate').value = dateStr;
+  
+  document.getElementById('cmbSegment').onchange = onSegmentChange;
+  document.getElementById('txtProduct').addEventListener('input', onProductInput);
+  document.getElementById('txtProduct').addEventListener('focus', function() {
+    this.setAttribute('list', 'productList');  // ✅ This forces datalist
+  });
+  document.getElementById('txtParty').oninput = updateTotalDisplay;
+  
+  // 🔥 NEW: Force datalist refresh after segment change
+  document.getElementById('cmbSegment').addEventListener('change', function() {
+    setTimeout(() => {
+      const productInput = document.getElementById('txtProduct');
+      productInput.focus();
+      productInput.blur();
+      productInput.focus();  // Trigger datalist refresh
+    }, 50);
+  });
+  
+  updateItemCount();
+};
+
+function debugProducts() {
+  const segment = document.getElementById('cmbSegment').value;
+  console.log('Segment:', segment);
+  console.log('Products available:', productsBySegment[segment] || 'None');
+  console.log('Datalist children:', document.getElementById('productList').children.length);
+  alert(`Segment: ${segment}\nProducts: ${productsBySegment[segment]?.length || 0}`);
+}
+
+
+    function addItem() {
+      try {
+        validateForm();
+        
+        const seg = document.getElementById('cmbSegment').value.trim();
+        const prod = document.getElementById('txtProduct').value.trim();
+        const unit = document.getElementById('cmbUnit').value.trim();
+        const qty = document.getElementById('txtQty').value.trim();
+
+        const exists = items.find(item => 
+          item.seg === seg && item.prod === prod && item.unit === unit
+        );
+        if (exists) {
+          if (!confirm('Item already exists. Add another quantity?')) return;
+        }
+
+        items.push({seg, prod, unit, qty: parseInt(qty)});
+        renderItemsTable();
+        clearItemFields();
+        updateItemCount();
+        toggleUpdateButton();
+        showStatus(`✅ Item added! (${items.length} total)`, 'success');
+        updateTotalDisplay();
+      } catch (error) {
+        showStatus(`❌ ${error.message}`, 'error');
+      }
+    }
+
+    function renderItemsTable() {
+      const tbody = document.querySelector('#lstItems tbody');
+      tbody.innerHTML = '';
+      
+      items.forEach((item, index) => {
+        const row = tbody.insertRow();
+        row.dataset.index = index;
+        row.insertCell(0).textContent = item.seg;
+        row.insertCell(1).textContent = item.prod;
+        row.insertCell(2).textContent = item.unit;
+        row.insertCell(3).textContent = item.qty;
+        
+        const actionCell = row.insertCell();
+        actionCell.innerHTML = `
+          <button onclick="deleteRow(${index})" style="background:#f44336;color:white;padding:4px 8px;font-size:11px;border:none;border-radius:4px;cursor:pointer;margin-right:4px;">🗑️</button>
+          <button onclick="editRow(${index})" style="background:#2196F3;color:white;padding:4px 8px;font-size:11px;border:none;border-radius:4px;cursor:pointer;">✏️</button>
+        `;
+        
+        updateRowClickHandler(row);
+      });
+    }
+
+    function updateRowClickHandler(row) {
+      row.addEventListener('click', function(e) {
+        if (e.target.tagName === 'BUTTON') return;
+        
+        document.querySelectorAll('#lstItems tr').forEach(r => r.classList.remove('selected'));
+        this.classList.add('selected');
+        selectedIndex = parseInt(this.dataset.index);
+        loadItemForEdit(items[selectedIndex]);
+        toggleUpdateButton(true);
+      });
+    }
+
+    function loadItemForEdit(item) {
+      document.getElementById('cmbSegment').value = item.seg;
+      onSegmentChange();
+      
+      setTimeout(() => {
+        document.getElementById('txtProduct').value = item.prod;
+        document.getElementById('cmbUnit').value = item.unit;
+        document.getElementById('txtQty').value = item.qty;
+        if (item.seg) updateProductDatalist(item.seg);
+      }, 100);
+      
+      showStatus('✏️ Item loaded for editing', 'info');
+    }
+
+    function editRow(index) {
+      selectedIndex = index;
+      document.querySelectorAll('#lstItems tr').forEach(r => r.classList.remove('selected'));
+      document.querySelector(`#lstItems tr[data-index="${index}"]`).classList.add('selected');
+      loadItemForEdit(items[index]);
+      toggleUpdateButton(true);
+    }
+
+    function updateItem() {
+      if (selectedIndex < 0) return showStatus('❌ Select an item first (click row)', 'error');
+
+      try {
+        const seg = document.getElementById('cmbSegment').value.trim();
+        const prod = document.getElementById('txtProduct').value.trim();
+        const unit = document.getElementById('cmbUnit').value.trim();
+        const qty = parseInt(document.getElementById('txtQty').value);
+
+        if (!unit || !qty || qty < 1) {
+          return showStatus('❌ Invalid Unit or Qty', 'error');
+        }
+
+        items[selectedIndex] = {seg, prod, unit, qty};
+        renderItemsTable();
+        clearItemFields();
+        selectedIndex = -1;
+        toggleUpdateButton();
+        updateItemCount();
+        updateTotalDisplay();
+        showStatus('✅ Item updated successfully!', 'success');
+      } catch (error) {
+        showStatus(`❌ Update failed: ${error.message}`, 'error');
+      }
+    }
+
+    function deleteRow(index) {
+      if (!confirm('Delete this item?')) return;
+      
+      items.splice(index, 1);
+      renderItemsTable();
+      selectedIndex = -1;
+      clearItemFields();
+      toggleUpdateButton();
+      updateItemCount();
+      updateTotalDisplay();
+      showStatus(`🗑️ Item deleted (${items.length} remaining)`, 'info');
+    }
+
+    function clearItemFields() {
+      ['cmbSegment', 'txtProduct', 'cmbUnit', 'txtQty'].forEach(id => 
+        document.getElementById(id).value = '');
+    }
+
+    function toggleUpdateButton(enable = false) {
+      document.getElementById('updateBtn').disabled = !enable;
+    }
+
+    function updateItemCount() {
+      document.getElementById('itemCount').textContent = `(${items.length} items)`;
+    }
+
+    function updateTotalDisplay() {
+      const totalSection = document.getElementById('totalSection');
+      const party = document.getElementById('txtParty').value.trim();
+      
+      if (items.length > 0 && party) {
+        document.getElementById('totalItems').textContent = items.length;
+        document.getElementById('totalParty').textContent = party;
+        totalSection.style.display = 'block';
+      } else {
+        totalSection.style.display = 'none';
+      }
+    }
+
+    function clearForm() {
+      if (!confirm('Clear all data? This cannot be undone.')) return;
+      
+      items = [];
+      selectedIndex = -1;
+      renderItemsTable();
+      document.getElementById('txtParty').value = '';
+      document.getElementById('txtDate').valueAsNumber = Date.now() - (new Date()).getTimezoneOffset() * 60000;
+      clearItemFields();
+      toggleUpdateButton();
+      updateItemCount();
+      updateTotalDisplay();
+      showStatus('🧹 Form cleared completely!', 'info');
+    }
+
+    async function saveOrder() {
+      const party = document.getElementById('txtParty').value.trim();
+      if (!party || items.length === 0) {
+        return showStatus('❌ Enter Party Name & Add at least 1 item', 'error');
+      }
+
+      const saveBtn = document.getElementById('saveBtn');
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = '⏳ Saving...';
+      showStatus('⏳ Connecting to server...', 'loading');
+
+      try {
+        const date = document.getElementById('txtDate').value;
+        const formData = new FormData();
+        formData.append('date', date);
+        formData.append('party', party);
+        formData.append('items', JSON.stringify(items));
+
+        console.log('📤 Sending to:', WEB_APP_URL);
+        
+        const response = await fetch(WEB_APP_URL, { 
+          method: 'POST', 
+          body: formData,
+          mode: 'cors',
+          credentials: 'omit'
+        });
+        
+        console.log('📥 Status:', response.status, response.statusText);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const result = await response.text();
+        console.log('📄 Result:', result);
+        
+        if (result.startsWith('ERROR')) {
+          throw new Error(result.replace('ERROR: ', ''));
+        }
+        
+        const orderNo = result.trim();
+        showStatus(`✅ Order ${orderNo} saved!`, 'success');
+        alert(`🎉 Order ${orderNo} saved successfully!`);
+        clearForm();
+        
+      } catch (error) {
+        console.error('💥 Full error:', error);
+        showStatus(`❌ ${error.message}`, 'error');
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = '💾 Submit Order';
+      }
+    }
+
+    function showStatus(msg, type) {
+      const status = document.getElementById('status');
+      status.textContent = msg;
+      status.className = `status ${type}`;
+      status.style.display = 'block';
+      setTimeout(() => status.style.display = 'none', 5000);
+    }
+
+    function downloadOrder() {
+      const party = document.getElementById('txtParty').value.trim();
+      const date = document.getElementById('txtDate').value;
+      if (!party || items.length === 0) {
+        return showStatus('❌ Add Party & Items first', 'error');
+      }
+
+      let csv = 'Order No,Date,Party,Segment,Product,Unit,Qty\n';
+      const orderNo = `${date.replace(/-/g, '')}-${String(items.length).padStart(3,'0')}`;
+      
+      items.forEach(item => {
+        csv += `"${orderNo}","${date}","${party.replace(/"/g, '""')}","${item.seg}","${item.prod.replace(/"/g, '""')}","${item.unit}","${item.qty}"\n`;
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Order_${orderNo}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      showStatus('📥 CSV downloaded successfully!', 'success');
+    }
+  </script>
+</body>
+</html>

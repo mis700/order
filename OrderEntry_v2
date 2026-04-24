@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a1a2e">
+<title>My Dream Foods – Order Entry</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f1a;
+    --surface: #1c1c2e;
+    --surface2: #252540;
+    --border: rgba(255,255,255,0.08);
+    --accent: #7c6cf5;
+    --accent2: #5fcdae;
+    --danger: #f07373;
+    --warn: #f0b86e;
+    --text: #f0f0f8;
+    --muted: #8888aa;
+    --green: #5fcdae;
+    --card-r: 16px;
+    --nav-h: 64px;
+    --header-h: 56px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    height: 100%; max-height: 100%;
+    background: var(--bg); color: var(--text);
+    font-family: 'Nunito', sans-serif;
+    overscroll-behavior: none;
+  }
+  #app { display: flex; flex-direction: column; height: 100vh; max-height: 100vh; overflow: hidden; }
+
+  /* ── Header ── */
+  .app-header {
+    height: var(--header-h); background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 16px; flex-shrink: 0;
+  }
+  .app-header .logo {
+    width: 34px; height: 34px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .app-header .title-wrap { flex: 1; min-width: 0; }
+  .app-header h1 {
+    font-size: 14px; font-weight: 800; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;
+  }
+  .app-header .subtitle { font-size: 11px; color: var(--muted); font-weight: 600; }
+  .badge {
+    background: var(--accent); color: white; font-size: 11px; font-weight: 800;
+    padding: 2px 8px; border-radius: 20px; min-width: 22px; text-align: center;
+  }
+
+  /* ── Layout ── */
+  .screen-wrap {
+    flex: 1; overflow-y: auto; overflow-x: hidden;
+    padding-bottom: calc(var(--nav-h) + 16px);
+    -webkit-overflow-scrolling: touch;
+  }
+  .screen { display: none; padding: 16px; }
+  .screen.active { display: block; }
+
+  /* ── Bottom Nav ── */
+  .bottom-nav {
+    height: var(--nav-h); background: var(--surface);
+    border-top: 1px solid var(--border); display: flex;
+    flex-shrink: 0; position: relative; z-index: 100;
+  }
+  .nav-btn {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 3px; cursor: pointer; border: none;
+    background: transparent; color: var(--muted);
+    font-family: 'Nunito', sans-serif; font-size: 10px; font-weight: 700;
+    transition: color 0.15s; position: relative;
+  }
+  .nav-btn .nav-icon { font-size: 22px; line-height: 1; }
+  .nav-btn.active { color: var(--accent); }
+  .nav-btn.active::before {
+    content: ''; position: absolute; top: 0; left: 20%; right: 20%; height: 2px;
+    background: var(--accent); border-radius: 0 0 4px 4px;
+  }
+  .nav-badge {
+    position: absolute; top: 6px; right: calc(50% - 18px);
+    background: var(--accent2); color: #0f0f1a;
+    font-size: 10px; font-weight: 900;
+    padding: 1px 5px; border-radius: 10px;
+    min-width: 18px; text-align: center;
+  }
+
+  /* ── Typography ── */
+  .section-label {
+    font-size: 11px; font-weight: 800; letter-spacing: 0.08em;
+    color: var(--muted); text-transform: uppercase; margin: 0 0 8px 2px;
+  }
+  .section-gap { margin-top: 20px; }
+
+  /* ── Cards ── */
+  .field-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--card-r); padding: 14px; margin-bottom: 10px;
+  }
+  .field-row { display: flex; gap: 10px; }
+  .field-row .field-group { flex: 1; }
+  .field-group { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
+  .field-group:last-child { margin-bottom: 0; }
+  .field-label {
+    font-size: 11px; font-weight: 800; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+
+  /* ── Inputs ── */
+  input[type=text], input[type=number], input[type=date], select {
+    width: 100%; background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 10px; color: var(--text);
+    font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 600;
+    padding: 11px 14px; outline: none;
+    appearance: none; -webkit-appearance: none;
+    transition: border-color 0.15s, box-shadow 0.15s; min-height: 46px;
+  }
+  input[type=date] { color-scheme: dark; }
+  select {
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238888aa' stroke-width='2.5'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat; background-position: right 12px center; background-size: 18px;
+    padding-right: 36px;
+  }
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(124,108,245,0.18);
+  }
+  input[readonly] {
+    color: var(--accent2); font-family: 'DM Mono', monospace;
+    font-size: 16px; cursor: default;
+  }
+  select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* ── Size badge ── */
+  .size-badge {
+    display: flex; align-items: center;
+    background: var(--bg); border: 1.5px solid var(--border);
+    border-radius: 10px; padding: 11px 14px; min-height: 46px;
+    font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500;
+    color: var(--accent2); letter-spacing: 0.03em;
+    transition: border-color 0.15s;
+  }
+  .size-badge.empty { color: var(--muted); font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 600; }
+  .size-badge.filled { border-color: rgba(95,205,174,0.35); background: rgba(95,205,174,0.06); }
+
+  /* ── Discount row ── */
+  .disc-row { display: flex; gap: 8px; }
+  .disc-row select { flex: 0 0 64px; }
+  .disc-row input { flex: 1; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 13px 18px; border-radius: 12px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800;
+    min-height: 48px;
+    transition: transform 0.12s, opacity 0.12s;
+    touch-action: manipulation; user-select: none;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-success { background: linear-gradient(135deg, #27ae60, var(--accent2)); color: white; }
+  .btn-warn    { background: linear-gradient(135deg, #f39c12, var(--warn)); color: white; }
+  .btn-danger  { background: var(--danger); color: white; }
+  .btn-ghost   { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
+  .btn-blue    { background: linear-gradient(135deg, #2196F3, #1976D2); color: white; }
+  .btn-full    { width: 100%; }
+  .btn-sm      { padding: 7px 12px; font-size: 13px; min-height: 34px; border-radius: 8px; }
+  .action-row  { display: flex; gap: 8px; margin-top: 4px; }
+  .action-row .btn { flex: 1; }
+
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: calc(var(--nav-h) + 12px); left: 16px; right: 16px;
+    padding: 13px 18px; border-radius: 12px; font-weight: 700; font-size: 14px;
+    text-align: center; z-index: 9999;
+    transform: translateY(20px) scale(0.95); opacity: 0;
+    transition: all 0.2s ease; pointer-events: none;
+  }
+  #toast.show  { transform: translateY(0) scale(1); opacity: 1; }
+  #toast.success { background: #1a3d2b; color: var(--accent2); border: 1px solid rgba(95,205,174,0.3); }
+  #toast.error   { background: #3d1a1a; color: var(--danger);  border: 1px solid rgba(240,115,115,0.3); }
+  #toast.info    { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  #toast.loading { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+
+  /* ── Item Cards ── */
+  .item-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--card-r); padding: 14px; margin-bottom: 10px;
+    position: relative; transition: border-color 0.15s;
+  }
+  .item-card.selected { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(124,108,245,0.25); }
+  .item-card-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 10px; margin-bottom: 8px;
+  }
+  .item-card-name { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.4; flex: 1; }
+  .item-card-amount { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; color: var(--green); white-space: nowrap; flex-shrink: 0; }
+  .item-card-meta { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+  .pill { background: var(--surface2); color: var(--muted); font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; }
+  .pill.seg  { color: var(--accent); }
+  .pill.disc { color: var(--warn); }
+  .pill.sz   { color: var(--accent2); }
+  .item-card-actions { display: flex; gap: 6px; }
+  .item-index {
+    position: absolute; top: 14px; left: -1px;
+    background: var(--surface2); color: var(--muted);
+    font-size: 10px; font-weight: 800;
+    padding: 2px 6px; border-radius: 0 6px 6px 0;
+    border: 1px solid var(--border); border-left: none;
+  }
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--muted); }
+  .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state p { font-size: 14px; font-weight: 600; }
+
+  /* ── Summary ── */
+  .summary-card {
+    background: linear-gradient(135deg, var(--surface), var(--surface2));
+    border: 1px solid rgba(95,205,174,0.2);
+    border-radius: var(--card-r); padding: 18px; margin-bottom: 16px; text-align: center;
+  }
+  .summary-grand { font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 500; color: var(--green); margin-bottom: 4px; }
+  .summary-sub { font-size: 12px; color: var(--muted); font-weight: 700; }
+  .party-chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 20px; padding: 4px 12px 4px 8px;
+    font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 16px;
+  }
+  .party-chip span { font-size: 16px; }
+  .save-section { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .divider { height: 1px; background: var(--border); margin: 16px 0; }
+  .note-box {
+    background: rgba(124,108,245,0.08); border: 1px solid rgba(124,108,245,0.2);
+    border-radius: 10px; padding: 10px 14px; font-size: 12px; color: var(--muted); font-weight: 600;
+  }
+  .note-box.green-box {
+    background: rgba(95,205,174,0.06); border-color: rgba(95,205,174,0.2); color: var(--accent2);
+  }
+  .greeting-card {
+    background: linear-gradient(135deg, #1e1a40, #2a1a40);
+    border: 1px solid rgba(124,108,245,0.25);
+    border-radius: var(--card-r); padding: 20px; margin-bottom: 20px;
+  }
+  .greeting-card h2 { font-size: 18px; font-weight: 900; margin-bottom: 4px; }
+  .greeting-card p { font-size: 13px; color: var(--muted); font-weight: 600; }
+
+  /* ── Loading overlay ── */
+  #loadingOverlay {
+    position: fixed; inset: 0;
+    background: rgba(15,15,26,0.95);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px; z-index: 9998;
+    transition: opacity 0.3s;
+  }
+  #loadingOverlay.hidden { display: none; }
+  .spinner {
+    width: 44px; height: 44px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loadingOverlay p { font-size: 14px; font-weight: 700; color: var(--muted); }
+  #loadingOverlay .load-sub { font-size: 12px; color: var(--surface2); font-weight: 600; }
+
+  /* ── Formula hint ── */
+  .formula-hint {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(95,205,174,0.06);
+    border: 1px solid rgba(95,205,174,0.18);
+    border-radius: 8px; padding: 7px 12px;
+    font-size: 11px; color: var(--accent2); font-weight: 700;
+    margin-bottom: 10px; font-family: 'DM Mono', monospace;
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <p>Loading Products…</p>
+  <div class="load-sub" id="loadSubText">Connecting to Google Sheets</div>
+</div>
+
+<div id="app">
+  <!-- Header -->
+  <header class="app-header">
+    <div class="logo">📦</div>
+    <div class="title-wrap">
+      <h1>MY DREAM FOODS LIMITED</h1>
+      <div class="subtitle">Order Entry System</div>
+    </div>
+    <div class="badge" id="headerCount">0</div>
+  </header>
+
+  <!-- Screens -->
+  <div class="screen-wrap" id="screenWrap">
+
+    <!-- ── Order Screen ── -->
+    <div class="screen active" id="screenOrder">
+      <div class="greeting-card">
+        <h2>New Order 🍫</h2>
+        <p>Fill in party details, then add items below</p>
+      </div>
+
+      <p class="section-label">Order Details</p>
+      <div class="field-card">
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">📅 Date</div>
+            <input type="date" id="txtDate">
+          </div>
+        </div>
+        <div class="field-group" style="margin-top:10px;">
+          <div class="field-label">👥 Party Name with City</div>
+          <input type="text" id="txtParty" placeholder="e.g. Ramesh Traders, Indore">
+        </div>
+      </div>
+
+      <div class="section-gap"></div>
+      <p class="section-label">Add Item</p>
+      <div class="field-card">
+        <!-- Segment -->
+        <div class="field-group">
+          <div class="field-label">📂 Segment</div>
+          <select id="cmbSegment" onchange="onSegmentChange()">
+            <option value="">Select Segment</option>
+          </select>
+        </div>
+        <!-- Product -->
+        <div class="field-group">
+          <div class="field-label">📦 Product</div>
+          <select id="cmbProduct" onchange="onProductChange()" disabled>
+            <option value="">Select Segment first</option>
+          </select>
+        </div>
+        <!-- Size + Unit -->
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">📐 Size</div>
+            <div class="size-badge empty" id="sizeDisplay">—</div>
+          </div>
+          <div class="field-group">
+            <div class="field-label">📏 Unit</div>
+            <select id="cmbUnit">
+              <option value="">Select Unit</option>
+              <option>PCS</option><option>BOX</option><option>CONTAINER</option>
+              <option>JAR</option><option>PKT</option><option>CUP</option><option>BUCKET</option>
+            </select>
+          </div>
+        </div>
+        <!-- Qty + Rate -->
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">🔢 Qty</div>
+            <input type="number" id="txtQty" min="1" placeholder="1" inputmode="numeric" oninput="calcAmount()">
+          </div>
+          <div class="field-group">
+            <div class="field-label">💰 Rate (₹)</div>
+            <input type="number" id="txtRate" min="0" step="0.01" placeholder="0.00" inputmode="decimal" oninput="calcAmount()">
+          </div>
+        </div>
+        <!-- Discount + Amount -->
+        <div class="field-row">
+          <div class="field-group">
+            <div class="field-label">🏷️ Discount</div>
+            <div class="disc-row">
+              <select id="cmbDiscType" onchange="calcAmount()">
+                <option value="%">%</option>
+                <option value="₹">₹</option>
+              </select>
+              <input type="number" id="txtDiscount" min="0" step="0.01" placeholder="0" inputmode="decimal" oninput="calcAmount()">
+            </div>
+          </div>
+          <div class="field-group">
+            <div class="field-label">🧾 Amount</div>
+            <input type="text" id="txtAmount" readonly placeholder="₹0.00">
+          </div>
+        </div>
+        <!-- Formula hint -->
+        <div class="formula-hint">
+          💡 Amount = Size × Rate × Qty − Discount
+        </div>
+        <!-- Actions -->
+        <div class="action-row">
+          <button class="btn btn-success" onclick="addItem()">➕ Add Item</button>
+          <button class="btn btn-warn" id="updateBtn" onclick="updateItem()" disabled>✏️ Update</button>
+        </div>
+      </div>
+      <div class="note-box" style="margin-top:8px;">
+        📌 Taxes &amp; other charges are not included in this order.
+      </div>
+    </div>
+
+    <!-- ── Items Screen ── -->
+    <div class="screen" id="screenItems">
+      <div id="itemsSummaryWrap" style="display:none;">
+        <div class="summary-card">
+          <div class="summary-grand" id="summaryTotal">₹0.00</div>
+          <div class="summary-sub" id="summaryMeta">0 items</div>
+        </div>
+        <div id="partyChipWrap"></div>
+      </div>
+      <div id="itemsListContainer">
+        <div class="empty-state">
+          <div class="empty-icon">🛒</div>
+          <p>No items yet.<br>Add items from the Order tab.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Submit Screen ── -->
+    <div class="screen" id="screenSubmit">
+      <p class="section-label">Order Summary</p>
+      <div class="summary-card">
+        <div class="summary-grand" id="submitTotal">₹0.00</div>
+        <div class="summary-sub" id="submitMeta">0 items · —</div>
+      </div>
+      <div class="field-card" id="submitReviewCard" style="margin-bottom:16px;">
+        <p style="color:var(--muted); font-size:13px; font-weight:600; text-align:center;">Add items first to review order</p>
+      </div>
+      <p class="section-label">Actions</p>
+      <div class="save-section">
+        <button class="btn btn-success btn-full" id="saveBtn" onclick="saveOrder()">
+          💾 Submit Order to Server
+        </button>
+        <button class="btn btn-blue btn-full" onclick="downloadOrder()">
+          📥 Download CSV
+        </button>
+        <button class="btn btn-ghost btn-full" onclick="clearForm()">
+          🗑️ Clear All Data
+        </button>
+      </div>
+      <div class="divider"></div>
+      <div class="note-box">
+        📌 Submitting sends the order to Google Sheets. Taxes &amp; other charges are not included.
+      </div>
+    </div>
+
+  </div><!-- /screen-wrap -->
+
+  <!-- Bottom Nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="navOrder" onclick="switchTab('Order')">
+      <span class="nav-icon">📝</span>Order
+    </button>
+    <button class="nav-btn" id="navItems" onclick="switchTab('Items')">
+      <span class="nav-icon">🛒</span>Items
+      <span class="nav-badge" id="navBadge" style="display:none;">0</span>
+    </button>
+    <button class="nav-btn" id="navSubmit" onclick="switchTab('Submit')">
+      <span class="nav-icon">🚀</span>Submit
+    </button>
+  </nav>
+</div>
+<div id="toast"></div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────────────────
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwVwXn55_JrG3BRU9M5TNx_6et9-luxzzh4gTftZUL0pwm6NizJb5Kx-zRPoLA7vEJw/exec';
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let items = [];
+let selectedIndex = -1;
+
+// Product data structures (filled on load)
+let allProducts = [];          // [{segment, product, size}, ...]
+let productsBySegment = {};    // {SegmentName: [{product, size}, ...]}
+let productSizeMap = {};       // "Segment|Product" → size (number)
+
+// ── Load Products from GAS ────────────────────────────────────────────────────
+async function loadProducts() {
+  const overlay  = document.getElementById('loadingOverlay');
+  const loadSub  = document.getElementById('loadSubText');
+  overlay.classList.remove('hidden');
+
+  try {
+    loadSub.textContent = 'Fetching from Products sheet…';
+    const resp = await fetch(`${WEB_APP_URL}?action=getProducts`, {
+      method: 'GET', mode: 'cors', credentials: 'omit'
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+
+    if (data.error) throw new Error(data.error);
+    if (!Array.isArray(data) || data.length === 0) throw new Error('No products found in sheet');
+
+    allProducts = data;
+    buildProductStructures(data);
+    populateSegmentDropdown();
+    loadSub.textContent = `${data.length} products loaded ✓`;
+    setTimeout(() => overlay.classList.add('hidden'), 400);
+
+  } catch (err) {
+    loadSub.textContent = 'Failed: ' + err.message;
+    // Show retry button inside overlay
+    const p = document.getElementById('loadingOverlay').querySelector('p');
+    p.textContent = '⚠️ Could not load products';
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-warn';
+    btn.style.cssText = 'margin-top:8px; min-width:140px;';
+    btn.textContent = '🔄 Retry';
+    btn.onclick = () => {
+      btn.remove();
+      loadProducts();
+    };
+    document.getElementById('loadingOverlay').appendChild(btn);
+  }
+}
+
+function buildProductStructures(data) {
+  productsBySegment = {};
+  productSizeMap = {};
+  data.forEach(row => {
+    const seg  = (row.segment || '').trim();
+    const prod = (row.product || '').trim();
+    const size = parseFloat(row.size) || 1;
+    if (!seg || !prod) return;
+    if (!productsBySegment[seg]) productsBySegment[seg] = [];
+    productsBySegment[seg].push({ product: prod, size });
+    productSizeMap[`${seg}|${prod}`] = size;
+  });
+}
+
+function populateSegmentDropdown() {
+  const sel = document.getElementById('cmbSegment');
+  sel.innerHTML = '<option value="">Select Segment</option>';
+  Object.keys(productsBySegment).sort().forEach(seg => {
+    const opt = document.createElement('option');
+    opt.value = seg; opt.textContent = seg;
+    sel.appendChild(opt);
+  });
+}
+
+// ── Segment / Product change handlers ────────────────────────────────────────
+function onSegmentChange() {
+  const seg  = document.getElementById('cmbSegment').value;
+  const prod = document.getElementById('cmbProduct');
+  prod.innerHTML = '<option value="">Select Product</option>';
+  clearSizeDisplay();
+  clearAmountDisplay();
+
+  if (seg && productsBySegment[seg]) {
+    productsBySegment[seg].forEach(item => {
+      const opt = document.createElement('option');
+      opt.value = item.product; opt.textContent = item.product;
+      prod.appendChild(opt);
+    });
+    prod.disabled = false;
+  } else {
+    prod.disabled = true;
+    prod.innerHTML = '<option value="">Select Segment first</option>';
+  }
+  calcAmount();
+}
+
+function onProductChange() {
+  const seg  = document.getElementById('cmbSegment').value;
+  const prod = document.getElementById('cmbProduct').value;
+
+  if (!seg || !prod) { clearSizeDisplay(); calcAmount(); return; }
+
+  const size = productSizeMap[`${seg}|${prod}`];
+  if (size !== undefined) {
+    const el = document.getElementById('sizeDisplay');
+    el.textContent = size;
+    el.className = 'size-badge filled';
+  } else {
+    clearSizeDisplay();
+  }
+
+  // Auto-detect unit from product name
+  const unit = extractUnit(prod);
+  if (unit) document.getElementById('cmbUnit').value = unit;
+
+  calcAmount();
+}
+
+function clearSizeDisplay() {
+  const el = document.getElementById('sizeDisplay');
+  el.textContent = '—';
+  el.className = 'size-badge empty';
+}
+
+function clearAmountDisplay() {
+  document.getElementById('txtAmount').value = '';
+}
+
+// ── Unit auto-detect ──────────────────────────────────────────────────────────
+function extractUnit(name) {
+  const map = { jar:'JAR', box:'BOX', container:'CONTAINER', pkt:'PKT', cup:'CUP', bucket:'BUCKET' };
+  const l = name.toLowerCase();
+  for (const [k, v] of Object.entries(map)) { if (l.includes(k)) return v; }
+  return '';
+}
+
+// ── Amount Calculation: Size × Rate × Qty (then discount) ────────────────────
+function getCurrentSize() {
+  const seg  = document.getElementById('cmbSegment').value;
+  const prod = document.getElementById('cmbProduct').value;
+  if (!seg || !prod) return 0;
+  return productSizeMap[`${seg}|${prod}`] || 0;
+}
+
+function computeAmount(size, rate, qty, discType, disc) {
+  const gross = size * rate * qty;
+  if (!disc || disc <= 0) return gross;
+  if (discType === '%') return gross * (1 - Math.min(disc, 100) / 100);
+  return Math.max(0, gross - disc);
+}
+
+function calcAmount() {
+  const size = getCurrentSize();
+  const rate = parseFloat(document.getElementById('txtRate').value) || 0;
+  const qty  = parseInt(document.getElementById('txtQty').value) || 0;
+  const discType = document.getElementById('cmbDiscType').value;
+  const disc = parseFloat(document.getElementById('txtDiscount').value) || 0;
+
+  if (size > 0 && rate > 0 && qty > 0) {
+    document.getElementById('txtAmount').value = '₹' + computeAmount(size, rate, qty, discType, disc).toFixed(2);
+  } else {
+    document.getElementById('txtAmount').value = '';
+  }
+}
+
+function formatDisc(discType, disc) {
+  if (!disc || disc <= 0) return null;
+  return discType === '%' ? `${disc}%` : `₹${parseFloat(disc).toFixed(2)}`;
+}
+
+// ── Validation ────────────────────────────────────────────────────────────────
+function validateForm() {
+  const party = document.getElementById('txtParty').value.trim();
+  const seg   = document.getElementById('cmbSegment').value;
+  const prod  = document.getElementById('cmbProduct').value;
+  const unit  = document.getElementById('cmbUnit').value;
+  const qty   = parseInt(document.getElementById('txtQty').value);
+  const rate  = parseFloat(document.getElementById('txtRate').value);
+  const size  = getCurrentSize();
+
+  if (!party)            throw new Error('Enter Party Name with City first');
+  if (!seg)              throw new Error('Select a Segment');
+  if (!prod)             throw new Error('Select a Product');
+  if (!size || size <= 0) throw new Error('Product has no valid Size — check Products sheet');
+  if (!unit)             throw new Error('Select Unit');
+  if (!qty || qty < 1)   throw new Error('Enter valid Qty (min 1)');
+  if (isNaN(rate) || rate < 0) throw new Error('Enter valid Rate (≥ 0)');
+}
+
+function getFormItem() {
+  const seg      = document.getElementById('cmbSegment').value.trim();
+  const prod     = document.getElementById('cmbProduct').value.trim();
+  const unit     = document.getElementById('cmbUnit').value.trim();
+  const qty      = parseInt(document.getElementById('txtQty').value);
+  const rate     = parseFloat(document.getElementById('txtRate').value) || 0;
+  const discType = document.getElementById('cmbDiscType').value;
+  const disc     = parseFloat(document.getElementById('txtDiscount').value) || 0;
+  const size     = getCurrentSize();
+  return {
+    seg, prod, unit, qty, rate, discType, disc, size,
+    amount: computeAmount(size, rate, qty, discType, disc)
+  };
+}
+
+// ── Add / Update / Delete ─────────────────────────────────────────────────────
+function addItem() {
+  try {
+    validateForm();
+    const item = getFormItem();
+    const exists = items.find(i => i.seg === item.seg && i.prod === item.prod && i.unit === item.unit);
+    if (exists && !confirm('Item already in list. Add again?')) return;
+    items.push(item);
+    clearItemFields();
+    updateAll();
+    showToast(`✅ Item added! (${items.length} total)`, 'success');
+  } catch (e) {
+    showToast('❌ ' + e.message, 'error');
+  }
+}
+
+function updateItem() {
+  if (selectedIndex < 0) return showToast('❌ Select an item first', 'error');
+  try {
+    validateForm();
+    items[selectedIndex] = getFormItem();
+    selectedIndex = -1;
+    clearItemFields();
+    document.getElementById('updateBtn').disabled = true;
+    updateAll();
+    showToast('✅ Item updated!', 'success');
+  } catch (e) {
+    showToast('❌ ' + e.message, 'error');
+  }
+}
+
+function deleteItem(index) {
+  if (!confirm('Delete this item?')) return;
+  items.splice(index, 1);
+  if (selectedIndex === index) {
+    selectedIndex = -1;
+    clearItemFields();
+    document.getElementById('updateBtn').disabled = true;
+  } else if (selectedIndex > index) {
+    selectedIndex--;
+  }
+  updateAll();
+  showToast(`🗑️ Deleted (${items.length} remaining)`, 'info');
+}
+
+function editItem(index) {
+  selectedIndex = index;
+  const item = items[index];
+
+  // Restore segment
+  document.getElementById('cmbSegment').value = item.seg;
+  onSegmentChange();   // re-populate product dropdown
+
+  setTimeout(() => {
+    document.getElementById('cmbProduct').value  = item.prod;
+    onProductChange();   // restore size display + unit
+    document.getElementById('cmbUnit').value     = item.unit;
+    document.getElementById('txtQty').value      = item.qty;
+    document.getElementById('txtRate').value     = item.rate.toFixed(2);
+    document.getElementById('cmbDiscType').value = item.discType;
+    document.getElementById('txtDiscount').value = item.disc || '';
+    // Restore size display manually (in case product size changed in sheet)
+    const el = document.getElementById('sizeDisplay');
+    el.textContent = item.size || '—';
+    el.className   = item.size ? 'size-badge filled' : 'size-badge empty';
+    calcAmount();
+  }, 80);
+
+  document.getElementById('updateBtn').disabled = false;
+  switchTab('Order');
+  document.getElementById('screenWrap').scrollTo({ top: 0, behavior: 'smooth' });
+  showToast('✏️ Item loaded for editing', 'info');
+}
+
+function clearItemFields() {
+  document.getElementById('cmbSegment').value   = '';
+  document.getElementById('cmbProduct').innerHTML = '<option value="">Select Segment first</option>';
+  document.getElementById('cmbProduct').disabled  = true;
+  clearSizeDisplay();
+  document.getElementById('cmbUnit').value      = '';
+  document.getElementById('txtQty').value       = '';
+  document.getElementById('txtRate').value      = '';
+  document.getElementById('txtDiscount').value  = '';
+  document.getElementById('cmbDiscType').value  = '%';
+  document.getElementById('txtAmount').value    = '';
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function updateAll() {
+  renderItemCards();
+  updateBadge();
+  updateSubmitScreen();
+}
+
+function renderItemCards() {
+  const container = document.getElementById('itemsListContainer');
+  const sumWrap   = document.getElementById('itemsSummaryWrap');
+  if (items.length === 0) {
+    container.innerHTML = `<div class="empty-state"><div class="empty-icon">🛒</div><p>No items yet.<br>Add items from the Order tab.</p></div>`;
+    sumWrap.style.display = 'none';
+    return;
+  }
+  sumWrap.style.display = 'block';
+  const grand = items.reduce((s, i) => s + i.amount, 0);
+  document.getElementById('summaryTotal').textContent = '₹' + grand.toFixed(2);
+  document.getElementById('summaryMeta').textContent  = `${items.length} item${items.length !== 1 ? 's' : ''}`;
+  const party = document.getElementById('txtParty').value.trim();
+  document.getElementById('partyChipWrap').innerHTML = party
+    ? `<div class="party-chip"><span>👥</span>${party}</div>` : '';
+
+  let html = '';
+  items.forEach((item, i) => {
+    const disc = formatDisc(item.discType, item.disc);
+    html += `
+      <div class="item-card ${i === selectedIndex ? 'selected' : ''}" onclick="editItem(${i})">
+        <div class="item-index">#${i + 1}</div>
+        <div class="item-card-header">
+          <div class="item-card-name">${item.prod}</div>
+          <div class="item-card-amount">₹${item.amount.toFixed(2)}</div>
+        </div>
+        <div class="item-card-meta">
+          <span class="pill seg">${item.seg}</span>
+          <span class="pill">${item.unit}</span>
+          <span class="pill sz">Size: ${item.size}</span>
+          <span class="pill">Qty: ${item.qty}</span>
+          <span class="pill">₹${item.rate.toFixed(2)}/unit</span>
+          ${disc ? `<span class="pill disc">Disc: ${disc}</span>` : ''}
+        </div>
+        <div class="item-card-actions">
+          <button class="btn btn-warn btn-sm" onclick="event.stopPropagation(); editItem(${i})">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); deleteItem(${i})">🗑️ Del</button>
+        </div>
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+function updateBadge() {
+  const badge  = document.getElementById('navBadge');
+  const header = document.getElementById('headerCount');
+  if (items.length > 0) {
+    badge.textContent  = items.length; badge.style.display = 'block';
+    header.textContent = items.length;
+  } else {
+    badge.style.display = 'none'; header.textContent = '0';
+  }
+}
+
+function updateSubmitScreen() {
+  const grand = items.reduce((s, i) => s + i.amount, 0);
+  const party = document.getElementById('txtParty').value.trim();
+  document.getElementById('submitTotal').textContent = '₹' + grand.toFixed(2);
+  document.getElementById('submitMeta').textContent  =
+    `${items.length} item${items.length !== 1 ? 's' : ''} · ${party || '—'}`;
+  const card = document.getElementById('submitReviewCard');
+  if (items.length === 0) {
+    card.innerHTML = '<p style="color:var(--muted); font-size:13px; font-weight:600; text-align:center;">Add items first to review order</p>';
+    return;
+  }
+  let rows = '';
+  items.forEach(item => {
+    rows += `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border);">
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:12px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.prod}</div>
+          <div style="font-size:11px; color:var(--muted); font-weight:600;">${item.seg} · ${item.unit} · Size ${item.size} · Qty ${item.qty} · ₹${item.rate}/unit</div>
+        </div>
+        <div style="font-family:'DM Mono',monospace; font-size:13px; color:var(--green); margin-left:12px; flex-shrink:0;">₹${item.amount.toFixed(2)}</div>
+      </div>`;
+  });
+  card.innerHTML = `
+    <div style="font-size:11px; font-weight:800; color:var(--muted); text-transform:uppercase; letter-spacing:.06em; margin-bottom:4px;">Items (${items.length})</div>
+    ${rows}
+    <div style="display:flex; justify-content:space-between; padding-top:10px; font-weight:800; font-size:14px;">
+      <span>Grand Total</span>
+      <span style="font-family:'DM Mono',monospace; color:var(--green);">₹${grand.toFixed(2)}</span>
+    </div>`;
+}
+
+// ── Save / Download / Clear ───────────────────────────────────────────────────
+async function saveOrder() {
+  const party = document.getElementById('txtParty').value.trim();
+  if (!party || items.length === 0)
+    return showToast('❌ Enter Party Name with City & add at least 1 item', 'error');
+  const saveBtn = document.getElementById('saveBtn');
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '⏳ Submitting…';
+  showToast('⏳ Connecting to server…', 'loading');
+  try {
+    const date = document.getElementById('txtDate').value;
+    const fd = new FormData();
+    fd.append('date', date);
+    fd.append('party', party);
+    fd.append('items', JSON.stringify(items));
+    const resp = await fetch(WEB_APP_URL, { method:'POST', body:fd, mode:'cors', credentials:'omit' });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const result = await resp.text();
+    if (result.startsWith('ERROR')) throw new Error(result.replace('ERROR: ', ''));
+    const orderNo = result.trim();
+    showToast(`✅ Order ${orderNo} saved!`, 'success');
+    alert(`🎉 Order ${orderNo} saved successfully!`);
+    clearForm(true);
+  } catch (err) {
+    showToast(`❌ ${err.message}`, 'error');
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '💾 Submit Order to Server';
+  }
+}
+
+function downloadOrder() {
+  const party = document.getElementById('txtParty').value.trim();
+  const date  = document.getElementById('txtDate').value;
+  if (!party || items.length === 0) return showToast('❌ Add Party & Items first', 'error');
+  const orderNo = `${date.replace(/-/g,'')}-${String(items.length).padStart(3,'0')}`;
+  let csv = 'Order No,Date,Party,Segment,Product,Unit,Size,Qty,Rate,Disc Type,Discount,Amount\n';
+  items.forEach(item => {
+    csv += [
+      `"${orderNo}"`, `"${date}"`, `"${party.replace(/"/g,'""')}"`,
+      `"${item.seg}"`, `"${item.prod.replace(/"/g,'""')}"`,
+      `"${item.unit}"`, item.size, item.qty,
+      item.rate.toFixed(2), `"${item.discType}"`,
+      (item.disc||0).toFixed(2), item.amount.toFixed(2)
+    ].join(',') + '\n';
+  });
+  const grand = items.reduce((s, i) => s + i.amount, 0);
+  csv += `,,,,,,,,,,,"Grand Total",${grand.toFixed(2)}\n`;
+  const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = `Order_${orderNo}.csv`; a.click();
+  URL.revokeObjectURL(url);
+  showToast('📥 CSV downloaded!', 'success');
+}
+
+function clearForm(silent = false) {
+  if (!silent && !confirm('Clear all data? This cannot be undone.')) return;
+  items = []; selectedIndex = -1;
+  document.getElementById('txtParty').value = '';
+  document.getElementById('txtDate').value  = new Date().toISOString().split('T')[0];
+  clearItemFields();
+  document.getElementById('updateBtn').disabled = true;
+  updateAll();
+  if (!silent) showToast('🧹 Form cleared!', 'info');
+}
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  ['Order','Items','Submit'].forEach(t => {
+    document.getElementById(`screen${t}`).classList.toggle('active', t === tab);
+    document.getElementById(`nav${t}`).classList.toggle('active', t === tab);
+  });
+  document.getElementById('screenWrap').scrollTo({ top: 0 });
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, type = 'info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = `${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+window.onload = function() {
+  document.getElementById('txtDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('txtParty').addEventListener('input', () => {
+    updateSubmitScreen(); renderItemCards();
+  });
+  loadProducts();
+};
+</script>
+</body>
+</html>
